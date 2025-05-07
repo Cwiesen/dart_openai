@@ -6,6 +6,11 @@
 
 - Bug fixes.
 
+## 5.1.1
+
+- Update to have single line text content
+- Expose response function call
+
 ## 5.1.0
 
 - Massive issues fixes related to incorrecr use of types, model fields..., audio transcription file streaming error handling, and more.
