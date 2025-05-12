@@ -369,39 +369,39 @@ abstract class OpenAINetworkingClient {
               final data = value;
               respondData += data;
 
-              final dataLines = data
-                  .split("\n")
-                  .where((element) => element.isNotEmpty)
-                  .toList();
+              Map<String, dynamic> decodedData = {};
+              try {
+                decodedData = decodeToMap(respondData);
+              } catch (error) {/** ignore, data has not been received */}
 
-              for (String line in dataLines) {
-                if (line.startsWith(OpenAIStrings.streamResponseStart)) {
-                  final String data = line.substring(6);
-                  if (data.contains(OpenAIStrings.streamResponseEnd)) {
-                    OpenAILogger.streamResponseDone();
-                    break;
+              if (doesErrorExists(decodedData)) {
+                final error = decodedData[OpenAIStrings.errorFieldKey]
+                    as Map<String, dynamic>;
+                var message = error[OpenAIStrings.messageFieldKey] as String;
+                message = message.isEmpty ? jsonEncode(error) : message;
+                final statusCode = respond.statusCode;
+                final exception = RequestFailedException(message, statusCode);
+
+                yield* Stream<T>.error(
+                  exception,
+                ); // Error cases sent from openai
+
+                final dataLines = data
+                    .split("\n")
+                    .where((element) => element.isNotEmpty)
+                    .toList();
+
+                for (String line in dataLines) {
+                  if (line.startsWith(OpenAIStrings.streamResponseStart)) {
+                    final String data = line.substring(6);
+                    if (data.contains(OpenAIStrings.streamResponseEnd)) {
+                      OpenAILogger.streamResponseDone();
+                      break;
+                    }
+                    final decoded = jsonDecode(data) as Map<String, dynamic>;
+                    yield onSuccess(decoded);
+                    continue;
                   }
-                  final decoded = jsonDecode(data) as Map<String, dynamic>;
-                  yield onSuccess(decoded);
-                  continue;
-                }
-
-                Map<String, dynamic> decodedData = {};
-                try {
-                  decodedData = decodeToMap(respondData);
-                } catch (error) {/** ignore, data has not been received */}
-
-                if (doesErrorExists(decodedData)) {
-                  final error = decodedData[OpenAIStrings.errorFieldKey]
-                      as Map<String, dynamic>;
-                  var message = error[OpenAIStrings.messageFieldKey] as String;
-                  message = message.isEmpty ? jsonEncode(error) : message;
-                  final statusCode = respond.statusCode;
-                  final exception = RequestFailedException(message, statusCode);
-
-                  yield* Stream<T>.error(
-                    exception,
-                  ); // Error cases sent from openai
                 }
               }
             } // end of await for

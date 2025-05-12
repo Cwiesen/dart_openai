@@ -6,6 +6,10 @@
 
 - Bug fixes.
 
+## 5.1.2
+
+- Check for error before decoding streamed json response
+
 ## 5.1.1
 
 - Update to have single line text content
