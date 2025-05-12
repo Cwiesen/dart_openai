@@ -6,6 +6,10 @@
 
 - Bug fixes.
 
+## 5.1.3
+
+- Revert error decoding change
+
 ## 5.1.2
 
 - Check for error before decoding streamed json response

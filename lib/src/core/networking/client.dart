@@ -369,6 +369,24 @@ abstract class OpenAINetworkingClient {
               final data = value;
               respondData += data;
 
+              final dataLines = data
+                  .split("\n")
+                  .where((element) => element.isNotEmpty)
+                  .toList();
+
+              for (String line in dataLines) {
+                if (line.startsWith(OpenAIStrings.streamResponseStart)) {
+                  final String data = line.substring(6);
+                  if (data.contains(OpenAIStrings.streamResponseEnd)) {
+                    OpenAILogger.streamResponseDone();
+                    break;
+                  }
+                  final decoded = jsonDecode(data) as Map<String, dynamic>;
+                  yield onSuccess(decoded);
+                  continue;
+                }
+              }
+
               Map<String, dynamic> decodedData = {};
               try {
                 decodedData = decodeToMap(respondData);
@@ -385,24 +403,6 @@ abstract class OpenAINetworkingClient {
                 yield* Stream<T>.error(
                   exception,
                 ); // Error cases sent from openai
-
-                final dataLines = data
-                    .split("\n")
-                    .where((element) => element.isNotEmpty)
-                    .toList();
-
-                for (String line in dataLines) {
-                  if (line.startsWith(OpenAIStrings.streamResponseStart)) {
-                    final String data = line.substring(6);
-                    if (data.contains(OpenAIStrings.streamResponseEnd)) {
-                      OpenAILogger.streamResponseDone();
-                      break;
-                    }
-                    final decoded = jsonDecode(data) as Map<String, dynamic>;
-                    yield onSuccess(decoded);
-                    continue;
-                  }
-                }
               }
             } // end of await for
           } catch (error, stackTrace) {
