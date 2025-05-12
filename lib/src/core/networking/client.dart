@@ -363,11 +363,9 @@ abstract class OpenAINetworkingClient {
               .transform(openAIChatStreamLineSplitter);
 
           try {
-            String respondData = "";
             await for (final value
                 in stream.where((event) => event.isNotEmpty)) {
               final data = value;
-              respondData += data;
 
               final dataLines = data
                   .split("\n")
@@ -382,27 +380,24 @@ abstract class OpenAINetworkingClient {
                     break;
                   }
                   final decoded = jsonDecode(data) as Map<String, dynamic>;
-                  yield onSuccess(decoded);
-                  continue;
+                  if (doesErrorExists(decoded)) {
+                    final error = decoded[OpenAIStrings.errorFieldKey]
+                        as Map<String, dynamic>;
+                    var message =
+                        error[OpenAIStrings.messageFieldKey] as String;
+                    message = message.isEmpty ? jsonEncode(error) : message;
+                    final statusCode = respond.statusCode;
+                    final exception =
+                        RequestFailedException(message, statusCode);
+
+                    yield* Stream<T>.error(
+                      exception,
+                    ); // Error cases sent from openai
+                  } else {
+                    yield onSuccess(decoded);
+                    continue;
+                  }
                 }
-              }
-
-              Map<String, dynamic> decodedData = {};
-              try {
-                decodedData = decodeToMap(respondData);
-              } catch (error) {/** ignore, data has not been received */}
-
-              if (doesErrorExists(decodedData)) {
-                final error = decodedData[OpenAIStrings.errorFieldKey]
-                    as Map<String, dynamic>;
-                var message = error[OpenAIStrings.messageFieldKey] as String;
-                message = message.isEmpty ? jsonEncode(error) : message;
-                final statusCode = respond.statusCode;
-                final exception = RequestFailedException(message, statusCode);
-
-                yield* Stream<T>.error(
-                  exception,
-                ); // Error cases sent from openai
               }
             } // end of await for
           } catch (error, stackTrace) {
