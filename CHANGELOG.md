@@ -6,6 +6,10 @@
 
 - Bug fixes.
 
+## 5.1.5
+
+- Exposed the version configuration variable
+
 ## 5.1.4
 
 - Error handling now occurs on every line returned by stream
