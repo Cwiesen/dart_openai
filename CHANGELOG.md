@@ -6,6 +6,10 @@
 
 - Bug fixes.
 
+## 5.2.0
+
+- Adjusted accepted chat response fields to allow support for gemini gpt
+
 ## 5.1.5
 
 - Exposed the version configuration variable
