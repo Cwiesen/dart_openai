@@ -6,6 +6,10 @@
 
 - Bug fixes.
 
+## 5.2.1
+
+- Tool call null safety if index is not in response
+
 ## 5.2.0
 
 - Adjusted accepted chat response fields to allow support for gemini gpt
