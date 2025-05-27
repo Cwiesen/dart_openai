@@ -404,8 +404,12 @@ abstract class OpenAINetworkingClient {
               }
             } // end of await for
             if (errorResponse.isNotEmpty) {
-              final decoded =
-                  jsonDecode(errorResponse.toString()) as Map<String, dynamic>;
+              final decoded = jsonDecode(errorResponse.toString());
+              if (decoded is List) {
+                yield* Stream<T>.error(decoded.first as Map<String, dynamic>);
+              } else {
+                yield* Stream<T>.error(decoded as Map<String, dynamic>);
+              }
               yield* Stream<T>.error(decoded);
             }
           } catch (error, stackTrace) {

@@ -6,6 +6,10 @@
 
 - Bug fixes.
 
+## 5.2.3
+
+- Support streamed network errors returned as list
+
 ## 5.2.2
 
 - Streamed network errors are correctly decoded and thrown
