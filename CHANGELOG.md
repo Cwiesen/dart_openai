@@ -6,6 +6,10 @@
 
 - Bug fixes.
 
+## 5.2.2
+
+- Streamed network errors are correctly decoded and thrown
+
 ## 5.2.1
 
 - Tool call null safety if index is not in response

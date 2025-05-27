@@ -363,6 +363,7 @@ abstract class OpenAINetworkingClient {
               .transform(openAIChatStreamLineSplitter);
 
           try {
+            final errorResponse = StringBuffer();
             await for (final value
                 in stream.where((event) => event.isNotEmpty)) {
               final data = value;
@@ -397,9 +398,16 @@ abstract class OpenAINetworkingClient {
                     yield onSuccess(decoded);
                     continue;
                   }
+                } else {
+                  errorResponse.write(line);
                 }
               }
             } // end of await for
+            if (errorResponse.isNotEmpty) {
+              final decoded =
+                  jsonDecode(errorResponse.toString()) as Map<String, dynamic>;
+              yield* Stream<T>.error(decoded);
+            }
           } catch (error, stackTrace) {
             yield* Stream<T>.error(
               error,
